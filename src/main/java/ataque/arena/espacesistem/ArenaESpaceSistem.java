@@ -136,6 +136,7 @@ public class ArenaESpaceSistem {
                     2 - Editar Evento
                     3 - Listar Meus Eventos
                     4 - Excluir Evento
+                    5 - Listar Eventos em Curso
                     0 - Sair
                     Escolha uma opção:""");
 
@@ -144,9 +145,10 @@ public class ArenaESpaceSistem {
 
             switch (opcao) {
                 case 1 -> Evento.criarEvento(scanner, promotor); // Criar novo evento
-                case 2 -> Evento.editarEvento(scanner, promotor); // Editar evento existente
+                case 2 -> Evento.editarEventoPorPromotor(scanner, promotor); // Editar evento existente
                 case 3 -> Evento.listarEventosDePromotor(promotor); // Listar eventos do promotor
-                case 4 -> Evento.excluirEvento(scanner, promotor); // Excluir evento
+                case 4 -> Evento.excluirEventoPorPromotor(scanner, promotor); // Excluir evento
+                case 5 -> Evento.listarEventosPorModalidade(scanner); // Listar Eventos em curso
                 case 0 -> {
                     System.out.println("Saindo do menu de gestão de eventos...");
                     return;
