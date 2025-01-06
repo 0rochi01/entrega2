@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -21,87 +22,92 @@ import java.util.Scanner;
  *
  * @author RyanS
  */
-public class Evento {
+public class Evento implements Serializable {
     static final String ARQUIVO_EVENTOS = "eventos.dat"; // Caminho do arquivo onde os eventos serão armazenados
     private String nome;
-    private final Promotor emailPromotor;
-    private final Sala sala;
-    private String modalidade;
-    private LocalDateTime inicio;
-    private LocalDateTime fim;
-    private final int participantes;
-    private final TipoEvento tipoEvento;
-    double valorBase;
-    double valorFinal;
-    private final List<String> equipesInscritas = new ArrayList<>();
+private final Promotor promotor; // Referência ao objeto Promotor
+private final Sala sala;
+private String modalidade;
+private LocalDateTime inicio;
+private LocalDateTime fim;
+private final int participantes;
+private final TipoEvento tipoEvento;
+double valorBase;
+double valorFinal;
+private final List<String> equipesInscritas = new ArrayList<>();
 
-    public Evento(String nome, Promotor emailPromotor, Sala sala, String modalidade, LocalDateTime inicio, LocalDateTime fim, int participantes) {
-        this.nome = nome;
-        this.emailPromotor = emailPromotor;
-        this.sala = sala;
-        this.modalidade = modalidade;
-        this.inicio = inicio;
-        this.fim = fim;
-        this.participantes = participantes;
-        this.tipoEvento = sala.determinarTipoEvento(participantes);
-        calcularValorEvento(); // Chama o método de cálculo do valor
-    }
-    
-    
+public Evento(String nome, Promotor promotor, Sala sala, String modalidade, LocalDateTime inicio, LocalDateTime fim, int participantes) {
+    this.nome = nome;
+    this.promotor = promotor; // Armazena o promotor diretamente
+    this.sala = sala;
+    this.modalidade = modalidade;
+    this.inicio = inicio;
+    this.fim = fim;
+    this.participantes = participantes;
+    this.tipoEvento = sala.determinarTipoEvento(participantes);
+    calcularValorEvento(); // Chama o método de cálculo do valor
+}
 
+// Getters e setters (se necessário)
+public Promotor getPromotor() {
+    return promotor;
+}
 
-    public String getNome() {
-        return nome;
-    }
+public String getNome() {
+    return nome;
+}
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+public void setNome(String nome) {
+    this.nome = nome;
+}
 
-    public String getModalidade() {
-        return modalidade;
-    }
+public String getModalidade() {
+    return modalidade;
+}
 
-    public void setModalidade(String modalidade) {
-        this.modalidade = modalidade;
-    }
+public void setModalidade(String modalidade) {
+    this.modalidade = modalidade;
+}
 
-    public LocalDateTime getInicio() {
-        return inicio;
-    }
+public LocalDateTime getInicio() {
+    return inicio;
+}
 
-    public void setInicio(LocalDateTime inicio) {
-        this.inicio = inicio;
-    }
+public void setInicio(LocalDateTime inicio) {
+    this.inicio = inicio;
+}
 
-    public LocalDateTime getFim() {
-        return fim;
-    }
+public LocalDateTime getFim() {
+    return fim;
+}
 
-    public void setFim(LocalDateTime fim) {
-        this.fim = fim;
-    }
+public void setFim(LocalDateTime fim) {
+    this.fim = fim;
+}
 
-    public double getValorBase() {
-        return valorBase;
-    }
+public double getValorBase() {
+    return valorBase;
+}
 
-    public void setValorBase(double valorBase) {
-        this.valorBase = valorBase;
-    }
-    
-    public Promotor getPromotor() {
-        return emailPromotor;
-    }
-    
+public void setValorBase(double valorBase) {
+    this.valorBase = valorBase;
+}
 
-    public TipoEvento getTipoEvento() {
-        return tipoEvento;
-    }
+public TipoEvento getTipoEvento() {
+    return tipoEvento;
+}
 
-    public double getValorFinal() {
-        return valorFinal;
-    }
+public double getValorFinal() {
+    return valorFinal;
+}
+
+public List<String> getEquipesInscritas() {
+    return equipesInscritas;
+}
+
+public void adicionarEquipe(String equipe) {
+    equipesInscritas.add(equipe);
+}
     
 
     public String listarEquipes() {
@@ -138,7 +144,7 @@ public class Evento {
 
     public static void salvarEvento(Evento evento) {
     try (FileOutputStream fos = new FileOutputStream(ARQUIVO_EVENTOS, true);
-         ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+        ObjectOutputStream oos = new ObjectOutputStream(fos)) {
         oos.writeObject(evento);
     } catch (IOException e) {
         throw new RuntimeException("Erro ao salvar evento '" + evento.getNome() + "': " + e.getMessage());
@@ -146,22 +152,46 @@ public class Evento {
 }
 
 
-    public static List<Evento> carregarEventos() {
+    public static List<Evento> carregarEventosDoPromotor(Promotor promotor) {
         List<Evento> eventos = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(ARQUIVO_EVENTOS);
+        try (FileInputStream fis = new FileInputStream(Evento.ARQUIVO_EVENTOS);
              ObjectInputStream ois = new ObjectInputStream(fis)) {
             while (true) {
                 try {
-                    eventos.add((Evento) ois.readObject());
+                    Evento evento = (Evento) ois.readObject();
+                    if (evento.getPromotor().equals(promotor)) { // Filtrar eventos do promotor
+                        eventos.add(evento);
+                    }
                 } catch (EOFException e) {
                     break; // Fim do arquivo alcançado
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Erro ao carregar eventos: " + e.getMessage());
+            System.err.println("Erro ao carregar eventos: " + e.getMessage());
         }
         return eventos;
     }
+    
+    public static List<Evento> carregarTodosOsEventos() {
+        List<Evento> eventos = new ArrayList<>();
+        try (FileInputStream fis = new FileInputStream(Evento.ARQUIVO_EVENTOS);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            while (true) {
+                try {
+                    Evento evento = (Evento) ois.readObject();
+                    eventos.add(evento); // Adicionar todos os eventos à lista
+                } catch (EOFException e) {
+                    break; // Fim do arquivo alcançado
+                }
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Erro ao carregar eventos: " + e.getMessage());
+        }
+        return eventos;
+    }
+
+
+
 
     
     // Método para ler e validar data
@@ -184,60 +214,54 @@ public class Evento {
         System.out.print("Nome do Evento: ");
         String nome = scanner.nextLine();
 
-        System.out.print("Modalidade do Evento: ");
-        String modalidade = scanner.nextLine();
+        // Escolher a modalidade
+        System.out.println("Escolha a Modalidade do Evento:");
+        System.out.println("1 - CS-2");
+        System.out.println("2 - League of Legends");
+        System.out.println("3 - Valorant");
+        System.out.print("Escolha uma opção: ");
+        int modalidadeEscolhida = scanner.nextInt();
+        scanner.nextLine(); // Consumir quebra de linha
+
+        // Definir a modalidade com a sintaxe tradicional do switch
+        String modalidade;
+        switch (modalidadeEscolhida) {
+            case 1 -> modalidade = "CS-2";
+            case 2 -> modalidade = "League of Legends";
+            case 3 -> modalidade = "Valorant";
+            default -> {
+                System.out.println("Modalidade inválida. Evento não criado.");
+                return;
+            }
+        }
 
         // Usando o método de leitura de data com validação
         LocalDateTime inicio = lerDataHora(scanner, "Data e Hora de Início (dd-MM-yyyy HH:mm): ");
         LocalDateTime fim = lerDataHora(scanner, "Data e Hora de Fim (dd-MM-yyyy HH:mm): ");
 
-        // Escolher o tipo de evento
-        System.out.println("Escolha o tipo de evento:");
-        System.out.println("1 - Evento Pequeno (Máximo 100 participantes)");
-        System.out.println("2 - Evento Grande (Máximo 200 participantes)");
-        System.out.println("3 - Evento Exclusivo (Participantes ilimitados)");
-        System.out.print("Escolha uma opção: ");
-        int tipoEventoEscolhido = scanner.nextInt();
-        scanner.nextLine(); // Consumir quebra de linha
-
-        Evento novoEvento = null;
-        int maxParticipantes = 0;  // Capacidade máxima de participantes
-
         try {
-            switch (tipoEventoEscolhido) {
-                case 1 -> // Evento Pequeno
-                    maxParticipantes = 100;  // Capacidade máxima de participantes para eventos pequenos
-                case 2 -> // Evento Grande
-                    maxParticipantes = 200;  // Capacidade máxima de participantes para eventos grandes
-                case 3 -> // Evento Exclusivo
-                    maxParticipantes = Integer.MAX_VALUE;  // Participantes ilimitados para eventos exclusivos
-                default -> {
-                    System.out.println("Opção inválida. Evento não criado.");
-                    return;
-                }
-            }
+            // Criação do evento
+            Evento novoEvento = new Evento(
+                    nome,
+                    promotor, // Objeto promotor com nome e e-mail
+                    new Sala("Sala Padrão", 200), // Exemplo de sala
+                    modalidade,
+                    inicio,
+                    fim,
+                    0 // Número de participantes inicial
+            );
 
-            // Leitura do número de participantes de acordo com o tipo de evento
-            int participantes = lerNumeroParticipantes(scanner, maxParticipantes);
-
-            // Criação do evento de acordo com o tipo
-            switch (tipoEventoEscolhido) {
-                case 1 -> // Evento pequeno - instância da classe EventoPequeno
-                    novoEvento = new EventoPequeno(nome, promotor, modalidade, inicio, fim, participantes);
-                case 2 -> // Evento grande - instância da classe EventoGrande
-                    novoEvento = new EventoGrande(nome, promotor, modalidade, inicio, fim, participantes);
-                case 3 -> {
-                    Sala salaExclusiva = new Sala("Sala Exclusiva", 500); // Exemplo de sala para evento exclusivo
-                    novoEvento = new Evento(nome, promotor, salaExclusiva, modalidade, inicio, fim, participantes);
-                }
-            }
-
-            salvarEvento(novoEvento);
+            // Salva o evento no promotor e no arquivo
+            promotor.adicionarEvento(novoEvento); // Adiciona o evento à lista do promotor
+            Evento.salvarEvento(novoEvento); // Salva o evento no arquivo
             System.out.println("Evento criado com sucesso!");
         } catch (Exception e) {
             System.out.println("Erro ao criar evento: " + e.getMessage());
         }
     }
+
+
+
 
 
     public static int lerNumeroParticipantes(Scanner scanner, int maxParticipantes) {
@@ -259,33 +283,33 @@ public class Evento {
 
 
     
-    public static void editarEvento(Scanner scanner, Promotor promotor) {
-        List<Evento> eventos = carregarEventos();
+    public static void editarEventoPorPromotor(Scanner scanner, Promotor promotor) {
+        List<Evento> eventos = carregarEventosDoPromotor(promotor);
         System.out.println("=== Editar Eventos ===");
-        List<Evento> eventosPromotor = eventos.stream()
-                .filter(evento -> evento.getPromotor().equals(promotor))
-                .toList();
 
-        if (eventosPromotor.isEmpty()) {
+        if (eventos.isEmpty()) {
             System.out.println("Você não possui eventos criados.");
             return;
         }
 
-        for (int i = 0; i < eventosPromotor.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, eventosPromotor.get(i).toString());
+        for (int i = 0; i < eventos.size(); i++) {
+            System.out.printf("%d - %s (Modalidade: %s)%n", i + 1, eventos.get(i).getNome(), eventos.get(i).getModalidade());
         }
         System.out.print("Escolha um evento pelo número: ");
-        int eventoEscolhido = scanner.nextInt();
+        int escolha = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
 
-        Evento evento = eventosPromotor.get(eventoEscolhido - 1);
+        if (escolha < 1 || escolha > eventos.size()) {
+            System.out.println("Opção inválida.");
+            return;
+        }
+
+        Evento evento = eventos.get(escolha - 1);
 
         System.out.println("=== Editar Detalhes do Evento ===");
         System.out.println("1 - Nome");
-        System.out.println("2 - Modalidade");
-        System.out.println("3 - Data e Hora de Início");
-        System.out.println("4 - Data e Hora de Fim");
-        System.out.println("5 - Número de Participantes");
+        System.out.println("2 - Data de Início");
+        System.out.println("3 - Data de Fim");
         System.out.println("0 - Sair");
         System.out.print("Escolha uma opção: ");
         int opcao = scanner.nextInt();
@@ -298,70 +322,65 @@ public class Evento {
                 evento.setNome(novoNome);
             }
             case 2 -> {
-                System.out.print("Nova Modalidade: ");
-                String novaModalidade = scanner.nextLine();
-                evento.setModalidade(novaModalidade);
+                System.out.print("Nova Data e Hora de Início (dd-MM-yyyy HH:mm): ");
+                LocalDateTime novoInicio = lerDataHora(scanner, "Data e Hora de Início (dd-MM-yyyy HH:mm): ");
+                evento.setInicio(novoInicio);
             }
             case 3 -> {
-                System.out.print("Nova Data e Hora de Início (dd-MM-yyyy HH:mm): ");
-                String novoInicioStr = scanner.nextLine();
-                evento.setInicio(LocalDateTime.parse(novoInicioStr, DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
-            }
-            case 4 -> {
                 System.out.print("Nova Data e Hora de Fim (dd-MM-yyyy HH:mm): ");
-                String novoFimStr = scanner.nextLine();
-                evento.setFim(LocalDateTime.parse(novoFimStr, DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+                LocalDateTime novoFim = lerDataHora(scanner, "Data e Hora de Fim (dd-MM-yyyy HH:mm): ");
+                evento.setFim(novoFim);
             }
-
             case 0 -> {
                 System.out.println("Edição cancelada.");
                 return;
             }
-            default -> {
-                System.out.println("Opção inválida.");
-                return;
-            }
+            default -> System.out.println("Opção inválida.");
         }
 
-        evento.calcularValorEvento(); // Recalcular após a edição
-        salvarTodosOsEventos(eventos);
+        salvarTodosOsEventos(carregarTodosOsEventos()); // Salva todos os eventos no arquivo
         System.out.println("Evento editado com sucesso!");
     }
 
-    
-    public static void excluirEvento(Scanner scanner, Promotor promotor) {
-        List<Evento> eventos = carregarEventos();
-        List<Evento> eventosPromotor = eventos.stream().filter(evento -> evento.getPromotor().equals(promotor)).toList();
 
-        if (eventosPromotor.isEmpty()) {
-            System.out.println("Você não possui eventos criados para excluir.");
+
+
+    
+    public static void excluirEventoPorPromotor(Scanner scanner, Promotor promotor) {
+        List<Evento> eventos = carregarEventosDoPromotor(promotor);
+        System.out.println("=== Excluir Eventos ===");
+
+        if (eventos.isEmpty()) {
+            System.out.println("Você não possui eventos criados.");
             return;
         }
 
-        System.out.println("=== Excluir Evento ===");
-        for (int i = 0; i < eventosPromotor.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, eventosPromotor.get(i).toString());
+        for (int i = 0; i < eventos.size(); i++) {
+            System.out.printf("%d - %s (Modalidade: %s)%n", i + 1, eventos.get(i).getNome(), eventos.get(i).getModalidade());
         }
         System.out.print("Escolha um evento pelo número: ");
-        int eventoEscolhido = scanner.nextInt();
+        int escolha = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
 
-        if (eventoEscolhido < 1 || eventoEscolhido > eventosPromotor.size()) {
-            System.out.println("Opção inválida!");
+        if (escolha < 1 || escolha > eventos.size()) {
+            System.out.println("Opção inválida.");
             return;
         }
 
-        Evento eventoParaExcluir = eventosPromotor.get(eventoEscolhido - 1);
-        eventos.remove(eventoParaExcluir);
+        Evento evento = eventos.get(escolha - 1);
+        eventos.remove(evento); // Remove o evento da lista
 
-        salvarTodosOsEventos(eventos);
+        salvarTodosOsEventos(carregarTodosOsEventos()); // Salva todos os eventos no arquivo
         System.out.println("Evento excluído com sucesso!");
     }
+
+
+
     
     
     private static void salvarTodosOsEventos(List<Evento> eventos) {
         try (FileOutputStream fos = new FileOutputStream(ARQUIVO_EVENTOS, false);
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             for (Evento evento : eventos) {
                 oos.writeObject(evento);
             }
@@ -372,62 +391,91 @@ public class Evento {
 
     
     
-    public void listarTodosOsEventos() {
-        List<Evento> eventos = carregarEventos();
-        System.out.println("=== Todos os Eventos ===");
-        if (eventos.isEmpty()) {
-            System.out.println("Nenhum evento cadastrado.");
+    public static void listarEventosPorModalidade(Scanner scanner) {
+        System.out.println("=== Listar Eventos por Modalidade ===");
+        System.out.println("Escolha a Modalidade:");
+        System.out.println("1 - CS-2");
+        System.out.println("2 - League of Legends");
+        System.out.println("3 - Valorant");
+        System.out.print("Escolha uma opção: ");
+        int modalidadeEscolhida = scanner.nextInt();
+        scanner.nextLine(); // Consumir quebra de linha
+
+        // Modalidade selecionada
+        String modalidade;
+        switch (modalidadeEscolhida) {
+            case 1 -> modalidade = "CS-2";
+            case 2 -> modalidade = "League of Legends";
+            case 3 -> modalidade = "Valorant";
+            default -> {
+                System.out.println("Modalidade inválida.");
+                return; // Sai do método se a modalidade for inválida
+            }
+        }
+
+        // Carregar todos os eventos
+        List<Evento> eventos = Evento.carregarTodosOsEventos();
+
+        // Filtrar eventos pela modalidade
+        List<Evento> eventosPorModalidade = eventos.stream()
+                .filter(evento -> evento.getModalidade().equalsIgnoreCase(modalidade))
+                .toList();
+
+        // Exibir os eventos filtrados
+        System.out.println("=== Eventos na Modalidade: " + modalidade + " ===");
+        if (eventosPorModalidade.isEmpty()) {
+            System.out.println("Nenhum evento encontrado na modalidade selecionada.");
         } else {
-            eventos.forEach(System.out::println);
+            eventosPorModalidade.forEach(evento -> {
+                System.out.println("---------------------------");
+                System.out.println("Nome: " + evento.getNome());
+                System.out.println("Promotor: " + evento.getPromotor().getNomeDeUtilizador());
+                System.out.println("Data de Início: " + evento.getInicio());
+                System.out.println("Data de Fim: " + evento.getFim());
+                System.out.println("Valor Final: " + evento.getValorFinal());
+            });
         }
     }
 
+
+
+
+
+
+        
     
     
     public static void listarEventosDePromotor(Promotor promotor) {
-        List<Evento> eventos = carregarEventos();
-        System.out.println("=== Eventos Criados por " + promotor.getNomeDeUtilizador() + " ===");
-        List<Evento> eventosDoPromotor = eventos.stream()
-                .filter(evento -> evento.getPromotor().equals(promotor))
-                .toList();
+        // Obtém a lista de eventos criados pelo promotor
+        List<Evento> eventosDoPromotor = promotor.getEventosCriados();
+        System.out.println("=== Eventos Criados por " + promotor.getNomeCompleto() + " ===");
+
+        // Verifica se há eventos associados ao promotor
         if (eventosDoPromotor.isEmpty()) {
             System.out.println("Nenhum evento encontrado para este promotor.");
         } else {
-            eventosDoPromotor.forEach(System.out::println);
+            // Lista os eventos do promotor
+            eventosDoPromotor.forEach(evento -> {
+                System.out.println("---------------------------");
+                System.out.println("Nome: " + evento.getNome());
+                System.out.println("Modalidade: " + evento.getModalidade());
+                System.out.println("Data de Início: " + evento.getInicio());
+                System.out.println("Data de Fim: " + evento.getFim());
+                System.out.println("Valor Final: " + evento.getValorFinal());
+            });
         }
     }
 
 
+
+
+
+
+
     
-    @Override
-    public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-        String equipes = listarEquipes();
-        return String.format("""
-                ---------------------------
-                Evento: %s
-                Promotor: %s
-                Sala: %s
-                Modalidade: %s
-                Início: %s
-                Fim: %s
-                Participantes: %d
-                Tipo: %s
-                Valor Final: %.2f
-                Equipes Inscritas: %s
-                ---------------------------
-                """,
-                nome,
-                emailPromotor != null ? emailPromotor.getNomeDeUtilizador() : "N/A",
-                sala != null ? sala.getNome() : "N/A",
-                modalidade != null ? modalidade : "N/A",
-                inicio.format(formatter),
-                fim.format(formatter),
-                participantes,
-                tipoEvento != null ? tipoEvento : "N/A",
-                valorFinal > 0 ? valorFinal : 0.0,
-                equipes != null && !equipes.isEmpty() ? equipes : "Nenhuma");
-    }
+
+
+
 
     
 }

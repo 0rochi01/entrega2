@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  */
 public class EventoPequeno extends Evento {
 
-    private static final Sala SALA_PEQUENO = new Sala("Sala 1", 100); // Sala para eventos pequenos
+    private static final Sala SALA_PEQUENO = new Sala("Sala Pequena", 100);
 
     public EventoPequeno(String nome, Promotor emailPromotor, String modalidade, LocalDateTime inicio, LocalDateTime fim, int participantes) {
         super(nome, emailPromotor, SALA_PEQUENO, modalidade, inicio, fim, participantes);

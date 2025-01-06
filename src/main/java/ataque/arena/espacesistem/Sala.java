@@ -5,6 +5,7 @@
 package ataque.arena.espacesistem;
 
 import ataque.arena.espacesistem.Evento.TipoEvento;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
  * @author RyanS
  */
 
-public class Sala {
+public class Sala implements Serializable {
     private final String nome;
     private final int capacidade;
 

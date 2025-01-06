@@ -54,6 +54,7 @@ public class Utilizador implements Serializable {
         this.email = criptografia.criptografar(email);
         this.password = criptografia.gerarHashDeSenha(password);
         this.privilegio = criptografia.criptografar(privilegio);
+        this.criptografia = criptografia;
     }
 
     public String getNomeCompleto() {

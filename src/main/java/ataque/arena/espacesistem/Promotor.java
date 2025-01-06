@@ -7,7 +7,9 @@ package ataque.arena.espacesistem;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 /**
  *
@@ -15,10 +17,20 @@ import java.util.Base64;
  */
 public class Promotor extends Utilizador {
 
+    private List<Evento> eventosCriados;
+
     public Promotor(String nomeCompleto, String nomeDeUtilizador, String email, String password, String privilegio, Criptografia criptografia) {
         super(nomeCompleto, nomeDeUtilizador, email, password, privilegio, criptografia);
+        this.eventosCriados = new ArrayList<>();
     }
 
+    public List<Evento> getEventosCriados() {
+        return eventosCriados;
+    }
+
+    public void adicionarEvento(Evento evento) {
+        eventosCriados.add(evento);
+    }
 
     
     
