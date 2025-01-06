@@ -389,7 +389,7 @@ public void adicionarEquipe(String equipe) {
         }
     }
 
-    
+    //ja esta
     
     public static void listarEventosPorModalidade(Scanner scanner) {
         System.out.println("=== Listar Eventos por Modalidade ===");
