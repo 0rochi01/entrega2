@@ -331,28 +331,35 @@ public void adicionarEquipe(String equipe) {
 
     
     public static void editarEventoPorPromotor(Scanner scanner, Promotor promotor) {
-        List<Evento> eventos = carregarEventosDoPromotor(promotor);
-        System.out.println("=== Editar Eventos ===");
+        // Carregar todos os eventos criados pelo promotor
+        List<Evento> eventosDoPromotor = Evento.carregarTodosOsEventos().stream().filter(evento -> evento.getPromotor().getEmail().equalsIgnoreCase(promotor.getEmail())).toList();
 
-        if (eventos.isEmpty()) {
-            System.out.println("Você não possui eventos criados.");
+        System.out.println("=== Eventos Criados por " + promotor.getNomeCompleto() + " ===");
+
+        // Verifica se há eventos associados ao promotor
+        if (eventosDoPromotor.isEmpty()) {
+            System.out.println("Nenhum evento encontrado para este promotor.");
             return;
         }
 
-        for (int i = 0; i < eventos.size(); i++) {
-            System.out.printf("%d - %s (Modalidade: %s)%n", i + 1, eventos.get(i).getNome(), eventos.get(i).getModalidade());
+        // Lista os eventos do promotor
+        for (int i = 0; i < eventosDoPromotor.size(); i++) {
+            System.out.printf("%d - %s (Modalidade: %s)%n", i + 1, eventosDoPromotor.get(i).getNome(), eventosDoPromotor.get(i).getModalidade());
         }
+
         System.out.print("Escolha um evento pelo número: ");
         int escolha = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
 
-        if (escolha < 1 || escolha > eventos.size()) {
+        if (escolha < 1 || escolha > eventosDoPromotor.size()) {
             System.out.println("Opção inválida.");
             return;
         }
 
-        Evento evento = eventos.get(escolha - 1);
+        // Obter o evento selecionado
+        Evento evento = eventosDoPromotor.get(escolha - 1);
 
+        // Exibir menu para edição
         System.out.println("=== Editar Detalhes do Evento ===");
         System.out.println("1 - Nome");
         System.out.println("2 - Data de Início");
@@ -362,6 +369,7 @@ public void adicionarEquipe(String equipe) {
         int opcao = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
 
+        // Processar a escolha do usuário
         switch (opcao) {
             case 1 -> {
                 System.out.print("Novo Nome: ");
@@ -382,44 +390,62 @@ public void adicionarEquipe(String equipe) {
                 System.out.println("Edição cancelada.");
                 return;
             }
-            default -> System.out.println("Opção inválida.");
+            default -> {
+                System.out.println("Opção inválida.");
+                return;
+            }
         }
 
-        salvarTodosOsEventos(carregarTodosOsEventos()); // Salva todos os eventos no arquivo
+        // Salvar as alterações no arquivo
+        List<Evento> todosOsEventos = Evento.carregarTodosOsEventos();
+        todosOsEventos.removeIf(e -> e.getNome().equals(evento.getNome()) && e.getPromotor().getEmail().equals(promotor.getEmail()));
+        todosOsEventos.add(evento);
+
+        Evento.salvarTodosOsEventos(todosOsEventos);
         System.out.println("Evento editado com sucesso!");
     }
 
 
-
-
     
     public static void excluirEventoPorPromotor(Scanner scanner, Promotor promotor) {
-        List<Evento> eventos = carregarEventosDoPromotor(promotor);
-        System.out.println("=== Excluir Eventos ===");
+        // Carregar todos os eventos associados ao promotor
+        List<Evento> eventos = Evento.carregarTodosOsEventos();
 
-        if (eventos.isEmpty()) {
+        // Filtrar eventos criados pelo promotor
+        List<Evento> eventosDoPromotor = eventos.stream().filter(evento -> evento.getPromotor().getEmail().equalsIgnoreCase(promotor.getEmail())).toList();
+
+        System.out.println("=== Excluir Eventos Criados por " + promotor.getNomeCompleto() + " ===");
+
+        if (eventosDoPromotor.isEmpty()) {
             System.out.println("Você não possui eventos criados.");
             return;
         }
 
-        for (int i = 0; i < eventos.size(); i++) {
-            System.out.printf("%d - %s (Modalidade: %s)%n", i + 1, eventos.get(i).getNome(), eventos.get(i).getModalidade());
+        // Listar os eventos do promotor
+        for (int i = 0; i < eventosDoPromotor.size(); i++) {
+            System.out.printf("%d - %s (Modalidade: %s)%n", i + 1, eventosDoPromotor.get(i).getNome(), eventosDoPromotor.get(i).getModalidade());
         }
-        System.out.print("Escolha um evento pelo número: ");
+
+        System.out.print("Escolha um evento pelo número para excluir: ");
         int escolha = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
 
-        if (escolha < 1 || escolha > eventos.size()) {
+        if (escolha < 1 || escolha > eventosDoPromotor.size()) {
             System.out.println("Opção inválida.");
             return;
         }
 
-        Evento evento = eventos.get(escolha - 1);
-        eventos.remove(evento); // Remove o evento da lista
+        // Selecionar o evento a ser excluído
+        Evento eventoParaExcluir = eventosDoPromotor.get(escolha - 1);
 
-        salvarTodosOsEventos(carregarTodosOsEventos()); // Salva todos os eventos no arquivo
+        // Remover o evento da lista geral de eventos
+        eventos.remove(eventoParaExcluir);
+
+        // Salvar a lista atualizada de eventos no arquivo
+        salvarTodosOsEventos(eventos);
         System.out.println("Evento excluído com sucesso!");
     }
+
 
 
 
@@ -493,22 +519,32 @@ public void adicionarEquipe(String equipe) {
     
     
     public static void listarEventosDePromotor(Promotor promotor) {
-        // Obtém a lista de eventos criados pelo promotor
-        List<Evento> eventosDoPromotor = promotor.getEventosCriados();
+        // Validar se o promotor não é nulo
+        if (promotor == null) {
+            System.out.println("Erro: Promotor não especificado.");
+            return;
+        }
+        // Carregar todos os eventos
+        List<Evento> eventos = Evento.carregarTodosOsEventos();
+        
+        // Filtrar eventos pela modalidade
+        List<Evento> eventosPorPromotor = eventos.stream().filter(evento -> evento.getPromotor().getEmail().equalsIgnoreCase(promotor.getEmail())).toList();
+        
         System.out.println("=== Eventos Criados por " + promotor.getNomeCompleto() + " ===");
 
         // Verifica se há eventos associados ao promotor
-        if (eventosDoPromotor.isEmpty()) {
-            System.out.println("Nenhum evento encontrado para este promotor.");
+        if (eventosPorPromotor.isEmpty()) {
+            System.out.println("Nenhum evento encontrado pertencente a este promotor.");
         } else {
             // Lista os eventos do promotor
-            eventosDoPromotor.forEach(evento -> {
+            eventosPorPromotor.forEach(evento -> {
                 System.out.println("---------------------------");
                 System.out.println("Nome: " + evento.getNome());
                 System.out.println("Modalidade: " + evento.getModalidade());
                 System.out.println("Data de Início: " + evento.getInicio());
                 System.out.println("Data de Fim: " + evento.getFim());
-                System.out.println("Valor Final: " + evento.getValorFinal());
+                System.out.println("Valor Final: € " + String.format("%.2f", evento.getValorFinal()));
+                System.out.println("---------------------------");
             });
         }
     }
