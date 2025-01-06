@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -21,7 +22,7 @@ import java.util.Scanner;
  *
  * @author RyanS
  */
-public class Evento {
+public class Evento implements Serializable {
     static final String ARQUIVO_EVENTOS = "eventos.dat"; // Caminho do arquivo onde os eventos serão armazenados
     private String nome;
     private final Promotor emailPromotor;
@@ -231,8 +232,9 @@ public class Evento {
                     novoEvento = new Evento(nome, promotor, salaExclusiva, modalidade, inicio, fim, participantes);
                 }
             }
-
-            salvarEvento(novoEvento);
+            
+            promotor.adicionarEvento(novoEvento);// Adiciona o evento ao promotor
+            salvarEvento(novoEvento);// Salva o evento no arquivo
             System.out.println("Evento criado com sucesso!");
         } catch (Exception e) {
             System.out.println("Erro ao criar evento: " + e.getMessage());
@@ -260,8 +262,10 @@ public class Evento {
 
     
     public static void editarEvento(Scanner scanner, Promotor promotor) {
-        List<Evento> eventos = carregarEventos();
+        List<Evento> eventos = carregarEventos(); // Carrega todos os eventos do sistema
         System.out.println("=== Editar Eventos ===");
+
+        // Filtra os eventos criados pelo promotor logado
         List<Evento> eventosPromotor = eventos.stream()
                 .filter(evento -> evento.getPromotor().equals(promotor))
                 .toList();
@@ -271,12 +275,19 @@ public class Evento {
             return;
         }
 
+        // Lista eventos criados pelo promotor
         for (int i = 0; i < eventosPromotor.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, eventosPromotor.get(i).toString());
+            System.out.printf("%d - %s%n", i + 1, eventosPromotor.get(i).getNome());
         }
+
         System.out.print("Escolha um evento pelo número: ");
         int eventoEscolhido = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
+
+        if (eventoEscolhido < 1 || eventoEscolhido > eventosPromotor.size()) {
+            System.out.println("Opção inválida!");
+            return;
+        }
 
         Evento evento = eventosPromotor.get(eventoEscolhido - 1);
 
@@ -285,7 +296,6 @@ public class Evento {
         System.out.println("2 - Modalidade");
         System.out.println("3 - Data e Hora de Início");
         System.out.println("4 - Data e Hora de Fim");
-        System.out.println("5 - Número de Participantes");
         System.out.println("0 - Sair");
         System.out.print("Escolha uma opção: ");
         int opcao = scanner.nextInt();
@@ -312,7 +322,6 @@ public class Evento {
                 String novoFimStr = scanner.nextLine();
                 evento.setFim(LocalDateTime.parse(novoFimStr, DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
             }
-
             case 0 -> {
                 System.out.println("Edição cancelada.");
                 return;
@@ -323,25 +332,32 @@ public class Evento {
             }
         }
 
-        evento.calcularValorEvento(); // Recalcular após a edição
-        salvarTodosOsEventos(eventos);
+        evento.calcularValorEvento(); // Recalcula o valor do evento após a edição
+        salvarTodosOsEventos(eventos); // Salva os eventos atualizados
         System.out.println("Evento editado com sucesso!");
     }
 
+
     
     public static void excluirEvento(Scanner scanner, Promotor promotor) {
-        List<Evento> eventos = carregarEventos();
-        List<Evento> eventosPromotor = eventos.stream().filter(evento -> evento.getPromotor().equals(promotor)).toList();
+        List<Evento> eventos = carregarEventos(); // Carrega todos os eventos do sistema
+        System.out.println("=== Excluir Evento ===");
+
+        // Filtra os eventos criados pelo promotor logado
+        List<Evento> eventosPromotor = eventos.stream()
+                .filter(evento -> evento.getPromotor().equals(promotor))
+                .toList();
 
         if (eventosPromotor.isEmpty()) {
             System.out.println("Você não possui eventos criados para excluir.");
             return;
         }
 
-        System.out.println("=== Excluir Evento ===");
+        // Lista eventos criados pelo promotor
         for (int i = 0; i < eventosPromotor.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, eventosPromotor.get(i).toString());
+            System.out.printf("%d - %s%n", i + 1, eventosPromotor.get(i).getNome());
         }
+
         System.out.print("Escolha um evento pelo número: ");
         int eventoEscolhido = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
@@ -352,11 +368,12 @@ public class Evento {
         }
 
         Evento eventoParaExcluir = eventosPromotor.get(eventoEscolhido - 1);
-        eventos.remove(eventoParaExcluir);
+        eventos.remove(eventoParaExcluir); // Remove o evento do arquivo principal
 
-        salvarTodosOsEventos(eventos);
+        salvarTodosOsEventos(eventos); // Salva os eventos atualizados
         System.out.println("Evento excluído com sucesso!");
     }
+
     
     
     private static void salvarTodosOsEventos(List<Evento> eventos) {
@@ -372,30 +389,58 @@ public class Evento {
 
     
     
-    public void listarTodosOsEventos() {
-        List<Evento> eventos = carregarEventos();
-        System.out.println("=== Todos os Eventos ===");
-        if (eventos.isEmpty()) {
-            System.out.println("Nenhum evento cadastrado.");
+    public static void listarEventosEmCurso() {
+        List<Evento> todosEventos = carregarEventos(); // Carrega todos os eventos salvos
+        LocalDateTime agora = LocalDateTime.now(); // Obtém a data e hora atual
+        System.out.println("=== Eventos em Curso ===");
+
+        List<Evento> eventosEmCurso = todosEventos.stream()
+                .filter(evento -> evento.getInicio().isBefore(agora) && evento.getFim().isAfter(agora))
+                .toList(); // Filtra eventos que estão em curso
+
+        if (eventosEmCurso.isEmpty()) {
+            System.out.println("Nenhum evento em curso no momento.");
         } else {
-            eventos.forEach(System.out::println);
+            eventosEmCurso.forEach(evento -> {
+                System.out.println("---------------------------");
+                System.out.println("Nome: " + evento.getNome());
+                System.out.println("Promotor: " + evento.getPromotor().getNomeDeUtilizador());
+                System.out.println("Modalidade: " + evento.getModalidade());
+                System.out.println("Data de Início: " + evento.getInicio());
+                System.out.println("Data de Fim: " + evento.getFim());
+                System.out.println("Tipo: " + evento.getTipoEvento());
+                System.out.println("---------------------------");
+            });
         }
     }
+
 
     
     
     public static void listarEventosDePromotor(Promotor promotor) {
-        List<Evento> eventos = carregarEventos();
+        List<Evento> todosEventos = carregarEventos(); // Carrega todos os eventos salvos
         System.out.println("=== Eventos Criados por " + promotor.getNomeDeUtilizador() + " ===");
-        List<Evento> eventosDoPromotor = eventos.stream()
+
+        List<Evento> eventosPromotor = todosEventos.stream()
                 .filter(evento -> evento.getPromotor().equals(promotor))
-                .toList();
-        if (eventosDoPromotor.isEmpty()) {
+                .toList(); // Filtra os eventos do promotor
+
+        if (eventosPromotor.isEmpty()) {
             System.out.println("Nenhum evento encontrado para este promotor.");
         } else {
-            eventosDoPromotor.forEach(System.out::println);
+            eventosPromotor.forEach(evento -> {
+                System.out.println("---------------------------");
+                System.out.println("Nome: " + evento.getNome());
+                System.out.println("Modalidade: " + evento.getModalidade());
+                System.out.println("Data de Início: " + evento.getInicio());
+                System.out.println("Data de Fim: " + evento.getFim());
+                System.out.println("Tipo: " + evento.getTipoEvento());
+                System.out.println("---------------------------");
+            });
         }
     }
+
+
 
 
     
