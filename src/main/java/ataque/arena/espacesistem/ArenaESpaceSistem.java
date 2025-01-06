@@ -211,7 +211,10 @@ public class ArenaESpaceSistem {
         public String getDescricao() {
             return descricao;
         }
+        
     }
-
+    
+     public static void QRcode(String[] args) {
+        new QRcode(); // Cria uma nova instância da classe QRcode
+    }
 }
-
