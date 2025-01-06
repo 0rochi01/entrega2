@@ -23,18 +23,19 @@ import java.util.Scanner;
  * @author RyanS
  */
 public class Evento implements Serializable {
+    private static final long serialVersionUID = 1L; // Define o serialVersionUID explicitamente
     static final String ARQUIVO_EVENTOS = "eventos.dat"; // Caminho do arquivo onde os eventos serão armazenados
     private String nome;
-private final Promotor promotor; // Referência ao objeto Promotor
-private final Sala sala;
-private String modalidade;
-private LocalDateTime inicio;
-private LocalDateTime fim;
-private final int participantes;
-private final TipoEvento tipoEvento;
-double valorBase;
-double valorFinal;
-private final List<String> equipesInscritas = new ArrayList<>();
+    private final Promotor promotor; // Referência ao objeto Promotor
+    private final Sala sala;
+    private String modalidade;
+    private LocalDateTime inicio;
+    private LocalDateTime fim;
+    private final int participantes;
+    private final TipoEvento tipoEvento;
+    double valorBase;
+    double valorFinal;
+    private final List<String> equipesInscritas = new ArrayList<>();
 
 public Evento(String nome, Promotor promotor, Sala sala, String modalidade, LocalDateTime inicio, LocalDateTime fim, int participantes) {
     this.nome = nome;
@@ -154,7 +155,7 @@ public void adicionarEquipe(String equipe) {
 
     public static List<Evento> carregarEventosDoPromotor(Promotor promotor) {
         List<Evento> eventos = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(Evento.ARQUIVO_EVENTOS);
+        try (FileInputStream fis = new FileInputStream(ARQUIVO_EVENTOS);
              ObjectInputStream ois = new ObjectInputStream(fis)) {
             while (true) {
                 try {
@@ -174,7 +175,7 @@ public void adicionarEquipe(String equipe) {
     
     public static List<Evento> carregarTodosOsEventos() {
         List<Evento> eventos = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(Evento.ARQUIVO_EVENTOS);
+        try (FileInputStream fis = new FileInputStream(ARQUIVO_EVENTOS);
              ObjectInputStream ois = new ObjectInputStream(fis)) {
             while (true) {
                 try {
@@ -210,55 +211,101 @@ public void adicionarEquipe(String equipe) {
 
     // Exemplo de uso na criação de eventos
     public static void criarEvento(Scanner scanner, Promotor promotor) {
-        System.out.println("=== Criar Novo Evento ===");
-        System.out.print("Nome do Evento: ");
-        String nome = scanner.nextLine();
+    System.out.println("=== Criar Novo Evento ===");
+    System.out.print("Nome do Evento: ");
+    String nome = scanner.nextLine();
 
-        // Escolher a modalidade
-        System.out.println("Escolha a Modalidade do Evento:");
-        System.out.println("1 - CS-2");
-        System.out.println("2 - League of Legends");
-        System.out.println("3 - Valorant");
-        System.out.print("Escolha uma opção: ");
-        int modalidadeEscolhida = scanner.nextInt();
-        scanner.nextLine(); // Consumir quebra de linha
+    // Escolher a modalidade
+    System.out.println("Escolha a Modalidade do Evento:");
+    System.out.println("1 - CS-2");
+    System.out.println("2 - League of Legends");
+    System.out.println("3 - Valorant");
+    System.out.print("Escolha uma opção: ");
+    int modalidadeEscolhida = scanner.nextInt();
+    scanner.nextLine(); // Consumir quebra de linha
 
-        // Definir a modalidade com a sintaxe tradicional do switch
-        String modalidade;
-        switch (modalidadeEscolhida) {
-            case 1 -> modalidade = "CS-2";
-            case 2 -> modalidade = "League of Legends";
-            case 3 -> modalidade = "Valorant";
-            default -> {
-                System.out.println("Modalidade inválida. Evento não criado.");
-                return;
-            }
-        }
-
-        // Usando o método de leitura de data com validação
-        LocalDateTime inicio = lerDataHora(scanner, "Data e Hora de Início (dd-MM-yyyy HH:mm): ");
-        LocalDateTime fim = lerDataHora(scanner, "Data e Hora de Fim (dd-MM-yyyy HH:mm): ");
-
-        try {
-            // Criação do evento
-            Evento novoEvento = new Evento(
-                    nome,
-                    promotor, // Objeto promotor com nome e e-mail
-                    new Sala("Sala Padrão", 200), // Exemplo de sala
-                    modalidade,
-                    inicio,
-                    fim,
-                    0 // Número de participantes inicial
-            );
-
-            // Salva o evento no promotor e no arquivo
-            promotor.adicionarEvento(novoEvento); // Adiciona o evento à lista do promotor
-            Evento.salvarEvento(novoEvento); // Salva o evento no arquivo
-            System.out.println("Evento criado com sucesso!");
-        } catch (Exception e) {
-            System.out.println("Erro ao criar evento: " + e.getMessage());
+    String modalidade;
+    switch (modalidadeEscolhida) {
+        case 1 -> modalidade = "CS-2";
+        case 2 -> modalidade = "League of Legends";
+        case 3 -> modalidade = "Valorant";
+        default -> {
+            System.out.println("Modalidade inválida. Evento não criado.");
+            return;
         }
     }
+
+    // Usando o método de leitura de data com validação
+    LocalDateTime inicio = lerDataHora(scanner, "Data e Hora de Início (dd-MM-yyyy HH:mm): ");
+    LocalDateTime fim = lerDataHora(scanner, "Data e Hora de Fim (dd-MM-yyyy HH:mm): ");
+
+    System.out.println("Escolha o tipo de evento:");
+    System.out.println("1 - Evento Pequeno (Máximo 100 participantes)");
+    System.out.println("2 - Evento Grande (Máximo 200 participantes)");
+    System.out.println("3 - Evento Exclusivo (Participantes ilimitados)");
+    System.out.print("Escolha uma opção: ");
+    int tipoEventoEscolhido = scanner.nextInt();
+    scanner.nextLine(); // Consumir quebra de linha
+
+    int maxParticipantes;
+    Sala sala;
+
+    // Determinar o tipo de evento e a sala
+    switch (tipoEventoEscolhido) {
+        case 1 -> {
+            maxParticipantes = 100;
+            sala = new Sala("Sala 1", 100);
+        }
+        case 2 -> {
+            maxParticipantes = 200;
+            sala = new Sala("Sala 2", 200);
+        }
+        case 3 -> {
+            maxParticipantes = Integer.MAX_VALUE;
+            sala = new Sala("Sala 3", 500); // Máximo fictício da sala exclusiva
+        }
+        default -> {
+            System.out.println("Opção inválida. Evento não criado.");
+            return;
+        }
+    }
+
+    System.out.print("Número de Participantes (Máximo " + maxParticipantes + "): ");
+    int participantes = scanner.nextInt();
+    scanner.nextLine(); // Consumir quebra de linha
+
+    // Depuração dos valores
+    System.out.println("DEBUG: Número de participantes fornecido: " + participantes);
+    System.out.println("DEBUG: Capacidade máxima permitida: " + maxParticipantes);
+
+    // Verificar se o número de participantes é compatível com o tipo de evento
+    if (participantes <= 0 || participantes > maxParticipantes) {
+        System.out.println("Erro: Número de participantes incompatível com a sala escolhida.");
+        return;
+    }
+
+    try {
+        // Criação do evento
+        Evento novoEvento = new Evento(
+                nome,
+                promotor, // Objeto promotor com nome e e-mail
+                sala, // Sala definida com base no tipo de evento
+                modalidade,
+                inicio,
+                fim,
+                participantes
+        );
+
+        // Salva o evento no promotor e no arquivo
+        promotor.adicionarEvento(novoEvento); // Adiciona o evento à lista do promotor
+        Evento.salvarEvento(novoEvento); // Salva o evento no arquivo
+        System.out.println("Evento criado com sucesso!");
+    } catch (Exception e) {
+        System.out.println("Erro ao criar evento: " + e.getMessage());
+    }
+}
+
+      
 
 
 
