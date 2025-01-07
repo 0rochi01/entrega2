@@ -300,6 +300,7 @@ public void adicionarEquipe(String equipe) {
         promotor.adicionarEvento(novoEvento); // Adiciona o evento à lista do promotor
         Evento.salvarEvento(novoEvento); // Salva o evento no arquivo
         System.out.println("Evento criado com sucesso!");
+        QRcode.gerarQRCodeConsole(); // gera qrcode de acesso
     } catch (Exception e) {
         System.out.println("Erro ao criar evento: " + e.getMessage());
     }
@@ -511,6 +512,7 @@ public void adicionarEquipe(String equipe) {
                 System.out.println("Data de Início: " + evento.getInicio());
                 System.out.println("Data de Fim: " + evento.getFim());
                 System.out.println("Valor Final: € " + String.format("%.2f", evento.getValorFinal()));
+                System.out.println("---------------------------");
             });
         }
     }
@@ -549,6 +551,7 @@ public void adicionarEquipe(String equipe) {
                 System.out.println("Data de Início: " + evento.getInicio());
                 System.out.println("Data de Fim: " + evento.getFim());
                 System.out.println("Valor Final: € " + String.format("%.2f", evento.getValorFinal()));
+                QRcode.gerarQRCodeConsole();
                 System.out.println("---------------------------");
             });
         }

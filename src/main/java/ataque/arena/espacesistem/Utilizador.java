@@ -486,7 +486,7 @@ public class Utilizador implements Serializable {
         
         LIDER_DE_EQUIPA(3), // Privilégio de Líder de Equipa
         
-        ESPETADOR(4); // Privilégio de Espetador
+        ESPECTADOR(4); // Privilégio de Espetador
 
 
         private final int codigoPrivilegio; // Código associado ao privilégio

@@ -28,8 +28,7 @@ public class QRcode {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         try {
             BitMatrix bitMatrix = qrCodeWriter.encode(textoAleatorio, BarcodeFormat.QR_CODE, largura, altura);
-            System.out.println("QR Code gerado com o texto: " + textoAleatorio);
-
+            System.out.println("QrCode de acesso: ");
             // Exibir QR Code no console
             for (int y = 0; y < altura; y++) {
                 for (int x = 0; x < largura; x++) {

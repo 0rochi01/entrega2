@@ -40,6 +40,7 @@ public class ArenaESpaceSistem {
                     1 - Cadastrar-se
                     2 - Login
                     0 - Sair
+                    ---------------------------             
                     Escolha uma opção:""");
 
             int opcao = scanner.nextInt();
@@ -100,6 +101,26 @@ public class ArenaESpaceSistem {
                             // Chama o método de gerenciamento de eventos
                             gerirEvento(scanner, promotor);
                         }
+                            case "espectador" -> {
+                            System.out.println("Bem-vindo, " + utilizadorLogado.getNomeCompleto() + "!");
+
+                            Espectador espectador; // Declara fora do `if` para reutilizar a variável
+                            if (utilizadorLogado instanceof Espectador) {
+                                espectador = (Espectador) utilizadorLogado; // Faz o casting
+                            } else {
+                                espectador = new Espectador(
+                                    utilizadorLogado.getNomeCompleto(),
+                                    utilizadorLogado.getNomeDeUtilizador(),
+                                    utilizadorLogado.getEmail(),
+                                    utilizadorLogado.getPassword(),
+                                    utilizadorLogado.getPrivilegio(),
+                                    criptografia
+                                );
+                            }
+
+                           menuEspectador(scanner, espectador);
+                        }
+                            
 
                             default -> {
                                 System.out.println("Bem-vindo, " + privilegio + " " + utilizadorLogado.getNomeCompleto() + "!");
@@ -126,7 +147,30 @@ public class ArenaESpaceSistem {
     }
 
 
+    public static void menuEspectador (Scanner scanner, Espectador espectador) {
+        while (true) {
+            System.out.println("""
+                    === Menu Espectador ===
+                    1 - Inscrever-se em um Evento
+                    2 - Listar Meus Eventos Inscritos    
+                    0 - Sair
+                    ---------------------------           
+                    Escolha uma opção:""");
+            
+            int opcao = scanner.nextInt();
+            scanner.nextLine(); // Consumir quebra de linha
 
+            switch (opcao) {
+                case 1 -> Espectador.inscreverNumEvento(scanner, espectador); // Listar eventos para se inscrever
+                case 2 -> Espectador.listarEventosInscritos(espectador); // Listar eventos inscritos
+                case 0 -> {
+                    System.out.println("Saindo, até logo...");
+                    return;
+                }
+                default -> System.out.println("Opção inválida! Tente novamente.");
+            }
+        }
+    }
 
     public static void gerirEvento(Scanner scanner, Promotor promotor) {
         while (true) {
@@ -138,6 +182,7 @@ public class ArenaESpaceSistem {
                     4 - Excluir Evento
                     5 - Listar Eventos em Curso
                     0 - Sair
+                    ---------------------------            
                     Escolha uma opção:""");
             //fgsdfg
 
@@ -147,9 +192,7 @@ public class ArenaESpaceSistem {
             switch (opcao) {
                 case 1 -> Evento.criarEvento(scanner, promotor); // Criar novo evento
                 case 2 -> Evento.editarEventoPorPromotor(scanner, promotor); // Editar evento existente
-                case 3 -> { Evento.listarEventosDePromotor(promotor);
-                            QRcode.gerarQRCodeConsole();
-                } // Listar eventos do promotor
+                case 3 -> Evento.listarEventosDePromotor(promotor); // Listar eventos do promotor
                 case 4 -> Evento.excluirEventoPorPromotor(scanner, promotor); // Excluir evento
                 case 5 -> Evento.listarEventosPorModalidade(scanner); // Listar Eventos em curso
                 case 0 -> {
