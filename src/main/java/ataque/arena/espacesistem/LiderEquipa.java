@@ -14,4 +14,6 @@ public class LiderEquipa extends Utilizador {
         super(nomeCompleto, nomeDeUtilizador, email, password, privilegio, criptografia);
     }
     
+    
+    
 }

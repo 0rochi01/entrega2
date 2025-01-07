@@ -49,6 +49,8 @@ public Evento(String nome, Promotor promotor, Sala sala, String modalidade, Loca
     calcularValorEvento(); // Chama o método de cálculo do valor
 }
 
+
+
 // Getters e setters (se necessário)
 public Promotor getPromotor() {
     return promotor;

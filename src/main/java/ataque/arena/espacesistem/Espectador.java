@@ -4,18 +4,20 @@
  */
 package ataque.arena.espacesistem;
 
+
+import java.io.*;
+import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 public class Espectador extends Utilizador {
-    private static final Map<String, List<Evento>> eventosInscritosPorEspectador = new HashMap<>();
-
+    
     public Espectador(String nomeCompleto, String nomeDeUtilizador, String email, String password, String privilegio, Criptografia criptografia) {
         super(nomeCompleto, nomeDeUtilizador, email, password, privilegio, criptografia);
     }
 
     // Método estático para inscrever-se em um evento
-    public static void inscreverNumEvento(Scanner scanner, Espectador espectador) {
+   public static void inscreverNumEvento(Scanner scanner, Espectador espectador) {
         System.out.println("=== Listar Eventos por Modalidade ===");
         System.out.println("Escolha a Modalidade de desejo:");
         System.out.println("1 - CS-2");
@@ -60,7 +62,7 @@ public class Espectador extends Utilizador {
                     evento.getFim());
         }
 
-        System.out.print("Escolha um evento (pelo número) para se inscrever:  ");
+        System.out.print("Escolha um evento (pelo número) para se inscrever: ");
         int escolha = scanner.nextInt();
         scanner.nextLine(); // Consumir quebra de linha
 
@@ -72,6 +74,9 @@ public class Espectador extends Utilizador {
         Evento eventoEscolhido = eventosPorModalidade.get(escolha - 1);
         String emailEspectador = espectador.getEmail();
 
+        // Carregar inscrições do arquivo
+        Map<String, List<Evento>> eventosInscritosPorEspectador = carregarInscricoes();
+
         eventosInscritosPorEspectador.putIfAbsent(emailEspectador, new ArrayList<>());
         List<Evento> eventosInscritos = eventosInscritosPorEspectador.get(emailEspectador);
 
@@ -79,17 +84,23 @@ public class Espectador extends Utilizador {
             System.out.println("Você já está inscrito neste evento.");
         } else {
             eventosInscritos.add(eventoEscolhido);
+            salvarInscricoes(eventosInscritosPorEspectador); // Salvar as inscrições no arquivo
             System.out.println("Inscrição realizada com sucesso no evento: " + eventoEscolhido.getNome());
             System.out.println("Não se esqueça de realizar pagamento no espaço físico para ter acesso ao evento presencial");
+
             QRcode.gerarQRCodeConsole();
         }
     }
 
-    // Método estático para listar os eventos em que um espectador está inscrito
+        // Método estático para listar os eventos em que um espectador está inscrito
     public static void listarEventosInscritos(Espectador espectador) {
         String emailEspectador = espectador.getEmail();
 
         System.out.println("=== Eventos Inscritos por " + espectador.getNomeCompleto() + " ===");
+
+        // Carregar inscrições do arquivo
+        Map<String, List<Evento>> eventosInscritosPorEspectador = carregarInscricoes();
+
         List<Evento> eventosInscritos = eventosInscritosPorEspectador.getOrDefault(emailEspectador, new ArrayList<>());
 
         if (eventosInscritos.isEmpty()) {
@@ -105,8 +116,28 @@ public class Espectador extends Utilizador {
                     evento.getInicio(),
                     evento.getFim());
         }
+
         QRcode.gerarQRCodeConsole();
     }
-}
+
+    // Método para carregar inscrições do arquivo
+    private static Map<String, List<Evento>> carregarInscricoes() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("inscricoes.dat"))) {
+            return (Map<String, List<Evento>>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            return new HashMap<>(); // Retorna um mapa vazio se não houver arquivo
+        }
+    }
+
+    private static void salvarInscricoes(Map<String, List<Evento>> eventosInscritosPorEspectador) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("inscricoes.dat"))) {
+            oos.writeObject(eventosInscritosPorEspectador);
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar inscrições: " + e.getMessage());
+        }
+    }
+        
+    }
+
 
 
