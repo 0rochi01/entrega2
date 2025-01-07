@@ -106,7 +106,7 @@ public class Admin extends Utilizador {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("\n=== Gerenciar Utilizadores ===");
-        System.out.print("Digite o privilégio (Promotor, Lider de Equipa, Jogador, Espectador): ");
+        System.out.print("Digite o privilégio (Promotor, Lider_de_Equipa, Jogador, Espectador): ");
         String privilegio = scanner.nextLine();
 
         // Filtrar utilizadores com o privilégio especificado

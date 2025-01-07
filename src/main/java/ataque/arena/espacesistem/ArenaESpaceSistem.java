@@ -102,7 +102,7 @@ public class ArenaESpaceSistem {
                             gerirEvento(scanner, promotor);
                         }
                             case "espectador" -> {
-                            System.out.println("Bem-vindo, " + utilizadorLogado.getNomeCompleto() + "!");
+                            System.out.println("Bem-vindo, " + utilizadorLogado.getNomeCompleto() + "!especyador");
 
                             Espectador espectador; // Declara fora do `if` para reutilizar a variável
                             if (utilizadorLogado instanceof Espectador) {
@@ -119,14 +119,17 @@ public class ArenaESpaceSistem {
                             }
 
                            menuEspectador(scanner, espectador);
+                           break;
                         }
-                        case "liderDeEquipa" -> {
-                            System.out.println("Bem-vindo, " + utilizadorLogado.getNomeCompleto() + "!");
-
+                        case "lider_de_equipa" -> {
+                            System.out.println("Bem-vindo, lider" + utilizadorLogado.getNomeCompleto() + "");
+                            
                             LiderEquipa lider; // Declara fora do `if` para reutilizar a variável
                             if (utilizadorLogado instanceof LiderEquipa) {
+                                
                                 lider = (LiderEquipa) utilizadorLogado; // Faz o casting
                             } else {
+                                
                                 lider = new LiderEquipa(
                                     utilizadorLogado.getNomeCompleto(),
                                     utilizadorLogado.getNomeDeUtilizador(),
@@ -143,7 +146,7 @@ public class ArenaESpaceSistem {
                             
 
                             default -> {
-                                System.out.println("Bem-vindo, " + privilegio + " " + utilizadorLogado.getNomeCompleto() + "!");
+                                System.out.println("Bem-vindo, " + privilegio + " " + utilizadorLogado.getNomeCompleto() + "");
                                 // Aqui você pode adicionar menus específicos para outros tipos de utilizadores
                             }
                         }
