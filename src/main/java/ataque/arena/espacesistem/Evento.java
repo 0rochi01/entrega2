@@ -399,16 +399,13 @@ public void adicionarEquipe(String equipe) {
         // Atualizar e salvar os eventos no arquivo
         List<Evento> todosOsEventos = Evento.carregarTodosOsEventos();
 
-        // Atualizar o evento na lista de todos os eventos
+        // Substituir o evento no arquivo com base na referência
         for (int i = 0; i < todosOsEventos.size(); i++) {
-            Evento e = todosOsEventos.get(i);
-            if (e.getPromotor().getEmail().equalsIgnoreCase(evento.getPromotor().getEmail()) &&e.getNome().equalsIgnoreCase(evento.getNome())) {
-                todosOsEventos.set(i, evento); // Substituir o evento na lista
+            if (todosOsEventos.get(i).equals(evento)) { // Substituir pela referência ou critérios robustos
+                todosOsEventos.set(i, evento); // Atualiza o evento na lista
                 break;
             }
         }
-        
-        // Salva os elemtos atualizados no arquivo 
         Evento.salvarTodosOsEventos(todosOsEventos);
         System.out.println("Evento editado com sucesso!");
     }
@@ -514,7 +511,6 @@ public void adicionarEquipe(String equipe) {
                 System.out.println("Data de Início: " + evento.getInicio());
                 System.out.println("Data de Fim: " + evento.getFim());
                 System.out.println("Valor Final: € " + String.format("%.2f", evento.getValorFinal()));
-                System.out.println("---------------------------");
             });
         }
     }
