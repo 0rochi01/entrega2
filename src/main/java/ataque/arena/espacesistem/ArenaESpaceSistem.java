@@ -139,6 +139,7 @@ public class ArenaESpaceSistem {
                     5 - Listar Eventos em Curso
                     0 - Sair
                     Escolha uma opção:""");
+            //fgsdfg
 
             int opcao = scanner.nextInt();
             scanner.nextLine(); // Consumir quebra de linha
