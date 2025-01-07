@@ -79,8 +79,8 @@ public class Espectador extends Utilizador {
             System.out.println("Você já está inscrito neste evento.");
         } else {
             eventosInscritos.add(eventoEscolhido);
-            System.out.println("Inscrição realizada com sucesso no evento: " + eventoEscolhido.getNome() + 
-                               "Não se esqueça de realizar pagamento no espaço físico para ter acesso ao evento presencial");
+            System.out.println("Inscrição realizada com sucesso no evento: " + eventoEscolhido.getNome());
+            System.out.println("Não se esqueça de realizar pagamento no espaço físico para ter acesso ao evento presencial");
             QRcode.gerarQRCodeConsole();
         }
     }
