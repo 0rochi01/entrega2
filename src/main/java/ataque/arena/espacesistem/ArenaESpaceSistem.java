@@ -146,7 +146,9 @@ public class ArenaESpaceSistem {
             switch (opcao) {
                 case 1 -> Evento.criarEvento(scanner, promotor); // Criar novo evento
                 case 2 -> Evento.editarEventoPorPromotor(scanner, promotor); // Editar evento existente
-                case 3 -> Evento.listarEventosDePromotor(promotor); // Listar eventos do promotor
+                case 3 -> { Evento.listarEventosDePromotor(promotor);
+                            QRcode.gerarQRCodeConsole();
+                } // Listar eventos do promotor
                 case 4 -> Evento.excluirEventoPorPromotor(scanner, promotor); // Excluir evento
                 case 5 -> Evento.listarEventosPorModalidade(scanner); // Listar Eventos em curso
                 case 0 -> {
@@ -213,7 +215,10 @@ public class ArenaESpaceSistem {
         public String getDescricao() {
             return descricao;
         }
+        
     }
-
+    
+     public static void QRcode(String[] args) {
+        new QRcode(); // Cria uma nova instância da classe QRcode
+    }
 }
-

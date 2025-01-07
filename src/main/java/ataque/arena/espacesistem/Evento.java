@@ -155,7 +155,7 @@ public void adicionarEquipe(String equipe) {
 
     public static List<Evento> carregarEventosDoPromotor(Promotor promotor) {
         List<Evento> eventos = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(ARQUIVO_EVENTOS);
+        try (FileInputStream fis = new FileInputStream(Evento.ARQUIVO_EVENTOS);
              ObjectInputStream ois = new ObjectInputStream(fis)) {
             while (true) {
                 try {
@@ -311,6 +311,9 @@ public void adicionarEquipe(String equipe) {
 
 
 
+
+
+
     public static int lerNumeroParticipantes(Scanner scanner, int maxParticipantes) {
         int participantes = 0;
         while (true) {
@@ -390,17 +393,22 @@ public void adicionarEquipe(String equipe) {
                 System.out.println("Edição cancelada.");
                 return;
             }
-            default -> {
-                System.out.println("Opção inválida.");
-                return;
-            }
+            default -> System.out.println("Opção inválida.");
         }
 
-        // Salvar as alterações no arquivo
+        // Atualizar e salvar os eventos no arquivo
         List<Evento> todosOsEventos = Evento.carregarTodosOsEventos();
-        todosOsEventos.removeIf(e -> e.getNome().equals(evento.getNome()) && e.getPromotor().getEmail().equals(promotor.getEmail()));
-        todosOsEventos.add(evento);
 
+        // Atualizar o evento na lista de todos os eventos
+        for (int i = 0; i < todosOsEventos.size(); i++) {
+            Evento e = todosOsEventos.get(i);
+            if (e.getPromotor().getEmail().equalsIgnoreCase(evento.getPromotor().getEmail()) &&e.getNome().equalsIgnoreCase(evento.getNome())) {
+                todosOsEventos.set(i, evento); // Substituir o evento na lista
+                break;
+            }
+        }
+        
+        // Salva os elemtos atualizados no arquivo 
         Evento.salvarTodosOsEventos(todosOsEventos);
         System.out.println("Evento editado com sucesso!");
     }
@@ -505,7 +513,8 @@ public void adicionarEquipe(String equipe) {
                 System.out.println("Promotor: " + evento.getPromotor().getNomeDeUtilizador());
                 System.out.println("Data de Início: " + evento.getInicio());
                 System.out.println("Data de Fim: " + evento.getFim());
-                System.out.println("Valor Final: " + evento.getValorFinal());
+                System.out.println("Valor Final: € " + String.format("%.2f", evento.getValorFinal()));
+                System.out.println("---------------------------");
             });
         }
     }
