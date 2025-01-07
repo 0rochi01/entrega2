@@ -120,6 +120,26 @@ public class ArenaESpaceSistem {
 
                            menuEspectador(scanner, espectador);
                         }
+                        case "liderDeEquipa" -> {
+                            System.out.println("Bem-vindo, " + utilizadorLogado.getNomeCompleto() + "!");
+
+                            LiderEquipa lider; // Declara fora do `if` para reutilizar a variável
+                            if (utilizadorLogado instanceof LiderEquipa) {
+                                lider = (LiderEquipa) utilizadorLogado; // Faz o casting
+                            } else {
+                                lider = new LiderEquipa(
+                                    utilizadorLogado.getNomeCompleto(),
+                                    utilizadorLogado.getNomeDeUtilizador(),
+                                    utilizadorLogado.getEmail(),
+                                    utilizadorLogado.getPassword(),
+                                    utilizadorLogado.getPrivilegio(),
+                                    criptografia
+                                );
+                            }
+
+                           menuLider(scanner, lider, utilizadores);
+                        }    
+                           
                             
 
                             default -> {
@@ -131,9 +151,6 @@ public class ArenaESpaceSistem {
                         System.out.println("Nome de utilizador ou senha inválidos!");
                     }
                 }
-
-
-
 
                 case 0 -> {
                     // Sair do sistema
@@ -147,6 +164,32 @@ public class ArenaESpaceSistem {
     }
 
 
+    public static void menuLider (Scanner scanner, LiderEquipa lider, List<Utilizador> utilizadores) {
+        while (true) {
+            System.out.println("""
+                    === Menu Líder de Equipas ===
+                    1 - Criar Nova Equipe
+                    2 - Listar Equipes    
+                    0 - Sair
+                    ---------------------------           
+                    Escolha uma opção:""");
+            
+            int opcao = scanner.nextInt();
+            scanner.nextLine(); // Consumir quebra de linha
+
+            switch (opcao) {
+                case 1 -> Evento.criarEquipe(scanner, lider, utilizadores); // Listar eventos para se inscrever
+                case 2 -> Evento.listarEquipas(lider); // Listar eventos inscritos
+                case 0 -> {
+                    System.out.println("Saindo, até logo...");
+                    return;
+                }
+                default -> System.out.println("Opção inválida! Tente novamente.");
+            }
+        }
+    }
+    
+    
     public static void menuEspectador (Scanner scanner, Espectador espectador) {
         while (true) {
             System.out.println("""

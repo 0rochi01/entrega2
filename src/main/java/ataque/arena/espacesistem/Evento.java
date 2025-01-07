@@ -559,16 +559,107 @@ public void adicionarEquipe(String equipe) {
         }
     }
 
+   
+    public static void criarEquipe(Scanner scanner, LiderEquipa lider, List<Utilizador> utilizadores) {
+        System.out.println("=== Criar Nova Equipe ===");
+        System.out.print("Nome da Equipe: ");
+        String nomeEquipe = scanner.nextLine();
 
+        // Lista para armazenar os jogadores da equipe
+        List<Jogador> jogadoresEquipe = new ArrayList<>();
 
+        // Filtrar apenas os jogadores disponíveis do sistema
+        List<Jogador> jogadoresDisponiveis = utilizadores.stream()
+                .filter(utilizador -> utilizador instanceof Jogador)
+                .map(utilizador -> (Jogador) utilizador)
+                .toList();
 
+        if (jogadoresDisponiveis.isEmpty()) {
+            System.out.println("Nenhum jogador disponível para adicionar à equipe.");
+            return;
+        }
 
+        while (true) {
+            System.out.println("=== Jogadores Disponíveis ===");
+            for (int i = 0; i < jogadoresDisponiveis.size(); i++) {
+                Jogador jogador = jogadoresDisponiveis.get(i);
+                System.out.printf("%d - %s (%s)%n", i + 1, jogador.getNomeCompleto(), jogador.getNomeDeUtilizador());
+            }
 
+            System.out.print("Escolha um jogador pelo número (ou 0 para finalizar): ");
+            int escolha = scanner.nextInt();
+            scanner.nextLine(); // Consumir quebra de linha
+
+            if (escolha == 0) {
+                break; // Finaliza a seleção de jogadores
+            }
+
+            if (escolha < 1 || escolha > jogadoresDisponiveis.size()) {
+                System.out.println("Opção inválida. Tente novamente.");
+            } else {
+                Jogador jogadorSelecionado = jogadoresDisponiveis.get(escolha - 1);
+                jogadoresEquipe.add(jogadorSelecionado);
+                jogadoresDisponiveis.remove(jogadorSelecionado); // Remove da lista de disponíveis
+                System.out.println("Jogador " + jogadorSelecionado.getNomeCompleto() + " adicionado à equipe.");
+            }
+        }
+
+        if (jogadoresEquipe.isEmpty()) {
+            System.out.println("Nenhum jogador foi adicionado à equipe. Equipe não será criada.");
+            return;
+        }
+
+        salvarEquipe(nomeEquipe, jogadoresEquipe, lider); // Salvar equipe associada ao líder
+        System.out.println("Equipe " + nomeEquipe + " criada com sucesso!");
+    }
 
     
-
-
-
-
+    private static void salvarEquipe(String nomeEquipe, List<Jogador> jogadoresEquipe, LiderEquipa lider) {
+        try (FileOutputStream fos = new FileOutputStream("equipes.dat", true);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(new Object[] { nomeEquipe, jogadoresEquipe, lider });
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar equipe: " + e.getMessage());
+        }
+    }
     
+    
+    public static void listarEquipas(LiderEquipa lider) {
+        try (FileInputStream fis = new FileInputStream("equipes.dat");
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            System.out.println("=== Equipes Criadas por " + lider.getNomeCompleto() + " ===");
+            boolean encontrouEquipe = false;
+
+            while (true) {
+                try {
+                    Object[] equipeData = (Object[]) ois.readObject();
+                    String nomeEquipe = (String) equipeData[0];
+                    List<Jogador> jogadoresEquipe = (List<Jogador>) equipeData[1];
+                    LiderEquipa liderEquipe = (LiderEquipa) equipeData[2];
+
+                    // Verifica se a equipe pertence ao líder fornecido
+                    if (lider.getEmail().equalsIgnoreCase(liderEquipe.getEmail())) {
+                        encontrouEquipe = true;
+                        System.out.println("Equipe: " + nomeEquipe);
+                        System.out.println("Jogadores:");
+                        for (Jogador jogador : jogadoresEquipe) {
+                            System.out.println(" - " + jogador.getNomeCompleto() + " (" + jogador.getNomeDeUtilizador() + ")");
+                        }
+                        System.out.println("---------------------------");
+                    }
+                } catch (EOFException e) {
+                    break; // Fim do arquivo
+                }
+            }
+
+            if (!encontrouEquipe) {
+                System.out.println("Nenhuma equipe encontrada para o líder " + lider.getNomeCompleto() + ".");
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Erro ao listar equipes: " + e.getMessage());
+        }
+    }
+
+
+
 }
