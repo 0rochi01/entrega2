@@ -561,57 +561,64 @@ public void adicionarEquipe(String equipe) {
 
    
     public static void criarEquipe(Scanner scanner, LiderEquipa lider, List<Utilizador> utilizadores) {
-        System.out.println("=== Criar Nova Equipe ===");
-        System.out.print("Nome da Equipe: ");
-        String nomeEquipe = scanner.nextLine();
+    System.out.println("=== Criar Nova Equipe ===");
+    System.out.print("Nome da Equipe: ");
+    String nomeEquipe = scanner.nextLine();
 
-        // Lista para armazenar os jogadores da equipe
-        List<Jogador> jogadoresEquipe = new ArrayList<>();
+    // Lista para armazenar os jogadores da equipe
+    List<Jogador> jogadoresEquipe = new ArrayList<>();
 
-        // Filtrar apenas os jogadores disponíveis do sistema
-        List<Jogador> jogadoresDisponiveis = utilizadores.stream()
-                .filter(utilizador -> utilizador instanceof Jogador)
-                .map(utilizador -> (Jogador) utilizador)
-                .toList();
-
-        if (jogadoresDisponiveis.isEmpty()) {
-            System.out.println("Nenhum jogador disponível para adicionar à equipe.");
-            return;
-        }
-
-        while (true) {
-            System.out.println("=== Jogadores Disponíveis ===");
-            for (int i = 0; i < jogadoresDisponiveis.size(); i++) {
-                Jogador jogador = jogadoresDisponiveis.get(i);
-                System.out.printf("%d - %s (%s)%n", i + 1, jogador.getNomeCompleto(), jogador.getNomeDeUtilizador());
-            }
-
-            System.out.print("Escolha um jogador pelo número (ou 0 para finalizar): ");
-            int escolha = scanner.nextInt();
-            scanner.nextLine(); // Consumir quebra de linha
-
-            if (escolha == 0) {
-                break; // Finaliza a seleção de jogadores
-            }
-
-            if (escolha < 1 || escolha > jogadoresDisponiveis.size()) {
-                System.out.println("Opção inválida. Tente novamente.");
-            } else {
-                Jogador jogadorSelecionado = jogadoresDisponiveis.get(escolha - 1);
-                jogadoresEquipe.add(jogadorSelecionado);
-                jogadoresDisponiveis.remove(jogadorSelecionado); // Remove da lista de disponíveis
-                System.out.println("Jogador " + jogadorSelecionado.getNomeCompleto() + " adicionado à equipe.");
-            }
-        }
-
-        if (jogadoresEquipe.isEmpty()) {
-            System.out.println("Nenhum jogador foi adicionado à equipe. Equipe não será criada.");
-            return;
-        }
-
-        salvarEquipe(nomeEquipe, jogadoresEquipe, lider); // Salvar equipe associada ao líder
-        System.out.println("Equipe " + nomeEquipe + " criada com sucesso!");
+    // Filtrar apenas jogadores
+    List<Jogador> jogadoresDisponiveis = new ArrayList<>();
+    for (Utilizador utilizador : utilizadores) {
+        if ("JOGADOR".equalsIgnoreCase(utilizador.getPrivilegio())) {
+        jogadoresDisponiveis.add((Jogador) utilizador);
+}
     }
+
+    if (jogadoresDisponiveis.isEmpty()) {
+        System.out.println("Nenhum jogador disponível para adicionar à equipe.");
+        return;
+    }
+
+    // Selecionar jogadores para a equipe
+    while (true) {
+        System.out.println("\n=== Jogadores Disponíveis ===");
+        for (int i = 0; i < jogadoresDisponiveis.size(); i++) {
+            Jogador jogador = jogadoresDisponiveis.get(i);
+            System.out.printf("%d - %s (%s)%n", i + 1, jogador.getNomeCompleto(), jogador.getNomeDeUtilizador());
+        }
+
+        System.out.print("Escolha um jogador pelo número (ou 0 para finalizar): ");
+        int escolha = scanner.nextInt();
+        scanner.nextLine(); // Consumir quebra de linha
+
+        if (escolha == 0) {
+            break; // Finaliza a seleção
+        }
+
+        if (escolha < 1 || escolha > jogadoresDisponiveis.size()) {
+            System.out.println("Opção inválida! Tente novamente.");
+        } else {
+            Jogador jogadorSelecionado = jogadoresDisponiveis.get(escolha - 1);
+            jogadoresEquipe.add(jogadorSelecionado);
+            jogadoresDisponiveis.remove(jogadorSelecionado);
+            System.out.println("Jogador " + jogadorSelecionado.getNomeCompleto() + " adicionado à equipe.");
+        }
+    }
+
+    if (jogadoresEquipe.isEmpty()) {
+        System.out.println("Nenhum jogador foi adicionado à equipe. Equipe não será criada.");
+        return;
+    }
+
+    // Salvar a equipe (Simulação)
+    salvarEquipe(nomeEquipe, jogadoresEquipe, lider);
+
+    System.out.println("Equipe " + nomeEquipe + " criada com sucesso!");
+}
+
+
 
     
     private static void salvarEquipe(String nomeEquipe, List<Jogador> jogadoresEquipe, LiderEquipa lider) {

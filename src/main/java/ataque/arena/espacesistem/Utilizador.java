@@ -482,7 +482,7 @@ public class Utilizador implements Serializable {
 
         PROMOTOR(1), // Privilégio de Promotor
         
-        ATLETA(2), // Privilégio de Atleta
+        JOGADOR(2), // Privilégio de Atleta
         
         LIDER_DE_EQUIPA(3), // Privilégio de Líder de Equipa
         
